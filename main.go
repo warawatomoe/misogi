@@ -20,7 +20,7 @@ func init() {
 	image.RegisterFormat("png", "\x89PNG\r\n\x1a\n", png.Decode, png.DecodeConfig)
 }
 
-var version = "0.0.5"
+var version = "0.0.75"
 
 func main() {
 	help := false
