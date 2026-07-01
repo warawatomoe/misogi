@@ -15,7 +15,7 @@ func ToRGBA(img image.Image) *image.RGBA {
 	return rgba
 }
 
-func cloneRGBA(src *image.RGBA) *image.RGBA {
+func imgClone(src *image.RGBA) *image.RGBA {
 	if src == nil {
 		return nil
 	}

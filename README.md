@@ -39,4 +39,4 @@ Copyright (c) ともえ (warawatomoe@proton.me)
 
 SPDX-License-Identifier: BSD-2-Clause
 
-See [LICENSE](LICENSE).
+See [LICENSE](LICENSE). Third-party components: [NOTICE](NOTICE).

@@ -29,6 +29,7 @@ func main() {
 	passes := 1
 	gain := 1.0
 	sizeOpt := "auto"
+	force := false
 
 	opts := []arg.Opt{
 		{Key: 'h', Typ: arg.TFlg, Dst: &help, Doc: "show help"},
@@ -37,6 +38,7 @@ func main() {
 		{Key: 'p', Typ: arg.TInt, Dst: &passes, Met: "num", Doc: "removal passes (1..8)"},
 		{Key: 'g', Typ: arg.TNum, Dst: &gain, Met: "num", Doc: "alpha gain (>0 and <=4)"},
 		{Key: 's', Typ: arg.TStr, Dst: &sizeOpt, Met: "size", Doc: "watermark size: auto, 48, 96"},
+		{Key: 'f', Typ: arg.TFlg, Dst: &force, Doc: "force removal even if no strong detection"},
 	}
 	usage := arg.Usage(opts, []arg.Pos{
 		{Name: "input"},
@@ -85,22 +87,20 @@ func main() {
 
 	rgba := wm.ToRGBA(img)
 
-	cfg, detectScore, werr := wm.ResolveCfg(rgba, sizeOpt)
+	sel, werr := wm.ResolveSelection(rgba, sizeOpt, force)
 	if werr != nil {
 		e.Die(werr)
 	}
 
-	alpha := wm.Alpha(cfg.Size)
-	if alpha == nil {
-		e.Die(e.New("misogi", e.Bug, "wm:alpha", "missing mask"))
-	}
-
-	auto := sizeOpt == "" || sizeOpt == "auto"
-	if auto && !wm.Detected(detectScore) {
-		// No spark signal in the expected region; pass the image through unchanged.
-	} else {
-		gain = wm.PickGain(rgba, cfg, alpha, passes, gain)
-		if werr = wm.Remove(rgba, cfg, alpha, gain, passes); werr != nil {
+	if sel.Accepted {
+		if gain == 1.0 {
+			gain = sel.Gain
+		}
+		alpha := wm.AlphaForConfig(sel.Config)
+		if alpha == nil {
+			e.Die(e.New("misogi", e.Bug, "wm:alpha", "missing mask"))
+		}
+		if werr = wm.Remove(rgba, sel.Config, alpha, gain, passes); werr != nil {
 			e.Die(werr)
 		}
 	}
